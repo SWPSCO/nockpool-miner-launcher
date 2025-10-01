@@ -63,7 +63,7 @@ jobs:
           ENV RUSTFLAGS="-A warnings"
           RUN cargo build --target x86_64-unknown-linux-gnu --release
           
-          FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu24.04
+          FROM nvidia/cuda:12.8.0-runtime-ubuntu24.04
           RUN apt update && apt install -y openssh-server && \
               rm -rf /var/lib/apt/lists/* && \
               mkdir -p /var/run/sshd /workspace && \
