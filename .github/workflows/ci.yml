@@ -185,6 +185,8 @@ jobs:
     needs: [build-linux-x64, build-macos]
     runs-on: ['self-hosted', 'Linux', 'X64']
     steps:
+      - uses: actions/checkout@v4
+      
       - uses: actions/download-artifact@v4
         with:
           name: linux-artifacts-x64
@@ -193,18 +195,55 @@ jobs:
         with:
           name: mac-installer
           path: ./mac
+          
       - name: Prepare packages
         run: |
           mkdir -p out
           cp linux_x64/miner-launcher out/miner-launcher_linux_x64
           chmod +x out/miner-launcher_linux_x64
           cp mac/miner-launcher.pkg out/miner-launcher_macos_aarch64.pkg
+          
+      - name: Package HiveOS flight chart
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          ARCHIVE_NAME="nockpool-${VERSION}.tar.gz"
+          
+          mkdir -p hiveos-package/nockpool
+          cp linux_x64/miner-launcher hiveos-package/nockpool/miner-launcher
+          chmod +x hiveos-package/nockpool/miner-launcher
+          cp -r ci/hiveos/nockpool/* hiveos-package/nockpool/
+          
+          cd hiveos-package
+          tar czf "../${ARCHIVE_NAME}" nockpool/
+          cd ..
+          
+          mv "${ARCHIVE_NAME}" out/
+          
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          
+      - name: Setup rclone config
+        env:
+          RCLONE_B64: ${{ secrets.RCLONE_B64 }}
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "$RCLONE_B64" | base64 -d > ~/.config/rclone/rclone.conf
+          
+      - name: Upload HiveOS archive to R2
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          ARCHIVE_NAME="nockpool-${VERSION}.tar.gz"
+          rclone copy "out/${ARCHIVE_NAME}" r2:swpsco/hiveos/ --progress
+          echo "HiveOS archive uploaded to: https://bin.aeroe.io/hiveos/${ARCHIVE_NAME}"
+          
       - uses: actions/upload-artifact@v4
         with:
           name: packaged-artifacts
           path: |
             out/miner-launcher_linux_x64
             out/miner-launcher_macos_aarch64.pkg
+            out/nockpool-*.tar.gz
 
   release:
     needs: package
