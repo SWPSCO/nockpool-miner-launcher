@@ -218,7 +218,15 @@ jobs:
           cd ..
           
           mv "${ARCHIVE_NAME}" out/
+
+      - name: Prepare HiveOS flightsheet
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          ARCHIVE_NAME="nockpool-${VERSION}.tar.gz"
           
+          sed "s|nockpool-[0-9.]*\.tar\.gz|${ARCHIVE_NAME}|g" \
+            ci/hiveos/flightsheet.json > out/flightsheet.json
+      
       - name: Install rclone
         run: |
           curl https://rclone.org/install.sh | sudo bash
@@ -244,6 +252,7 @@ jobs:
             out/miner-launcher_linux_x64
             out/miner-launcher_macos_aarch64.pkg
             out/nockpool-*.tar.gz
+            out/flightsheet.json
 
   release:
     needs: package
@@ -260,3 +269,5 @@ jobs:
           files: |
             out/miner-launcher_linux_x64
             out/miner-launcher_macos_aarch64.pkg
+            out/nockpool-*.tar.gz
+            out/flightsheet.json
