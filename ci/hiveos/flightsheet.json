@@ -1,0 +1,1 @@
+{"name":"NockPool","isFavorite":false,"items":[{"coin":"NOCK","pool_ssl":false,"wal_id":10925924,"dpool_ssl":false,"miner":"custom","miner_alt":"nockpool","miner_config":{"url":"null","algo":"nockvm-pow","miner":"nockpool","template":"YOUR_ACCOUNT_TOKEN_HERE","install_url":"https://bin.aeroe.io/hiveos/nockpool-0.2.2.tar.gz"},"pool_geo":[]}]}
